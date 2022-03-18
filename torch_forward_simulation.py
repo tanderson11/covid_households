@@ -4,7 +4,7 @@ from settings import device
 from settings import constants
 from settings import STATE
 
-def torch_forward_time(np_state, state_length_sampler, beta_household, np_probability_matrix, np_importation_probability, duration=None, secondary_infections=True, simplified_pmat=True): # CLOSES AROUND DELTA_T
+def torch_forward_time(np_state, state_length_sampler, beta_household, np_probability_matrix, np_importation_probability, duration=None, secondary_infections=True, simplified_pmat=True):
     debug = False  
 
     #start = time.time()

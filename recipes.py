@@ -393,6 +393,7 @@ class PopulationStructure:
         # Simulate #
         ############
 
+        print(f"SECONDARY INFECTIONS: {secondary_infections}")
         infections = torch_forward_time(initial_state, state_length_sampler, household_beta, pop.connectivity_matrix, importation_probability, secondary_infections=secondary_infections)
 
         num_infections = pd.Series(np.sum(infections, axis=1).squeeze())
