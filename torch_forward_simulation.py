@@ -31,7 +31,7 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
 
     ## --- Everything from here on out should be in the device and should be fast ---
     if simplified_pmat:
-        p_mat = 100 * beta_household * constants.delta_t * population_matrix
+        p_mat = beta_household * constants.delta_t * population_matrix
     else:
         p_mat = (1-(1-beta_household)** constants.delta_t) * population_matrix
 

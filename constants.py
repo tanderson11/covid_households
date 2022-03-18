@@ -11,7 +11,7 @@ class STATE(enum.IntEnum):
       removed = 3
 
 # Model parameter values
-delta_t = 0.1
+delta_t = 0.01
 
 @dataclass
 class Constants:
