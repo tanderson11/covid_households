@@ -83,11 +83,14 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
         
         ## infections within the households
         if inf_mask.any() and sus_mask.any(): # if someone is infectious and someone is susceptible, see if infections happen
-            ## permute here works as np.transpose
-            #print(p_mat)
             # probabilities of being infected (ie not escape probabilities)
+            ## permute here works as np.transpose
             probabilities = p_mat * sus_mask * inf_mask.permute(0, 2, 1) # transposing to take what amounts to an outer product in each household
-            #print(probabilities)
+
+            if simplified_pmat:
+                escape_probabilities = -1 * p_mat * sus_mask * inf_mask.permute(0, 2, 1)
+                escape_probabilities = np.exp(escape_probabilities)
+                probabilities = escape_probabilities
 
             ## do the same mask and random approach for infections as for importation, but within each
             ## household it's a size-by-size matrix for odds each person infects each other person
@@ -107,7 +110,10 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
             roll[mask] = random_tensor
 
             ## Hits are where infections should be introduced
-            hits = torch.where(roll < probabilities, 1, 0)
+            if simplified_pmat:
+                hits = torch.where(roll > probabilities, 1, 0)
+            else:
+                hits = torch.where(roll < probabilities, 1, 0)
 
             ## dstate being change in state, so 1 if someone progresses
             dstate = (torch.sum(hits, axis=2, keepdims=True) >= 1)
