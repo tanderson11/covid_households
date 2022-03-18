@@ -89,7 +89,7 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
 
             if simplified_pmat:
                 escape_probabilities = -1 * p_mat * sus_mask * inf_mask.permute(0, 2, 1)
-                escape_probabilities = np.exp(escape_probabilities)
+                escape_probabilities = torch.exp(escape_probabilities)
                 probabilities = escape_probabilities
 
             ## do the same mask and random approach for infections as for importation, but within each
