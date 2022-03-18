@@ -4,7 +4,7 @@ from settings import device
 from settings import constants
 from settings import STATE
 
-def torch_forward_time(np_state, state_length_sampler, beta_household, np_probability_matrix, np_importation_probability, duration=None, secondary_infections=True): # CLOSES AROUND DELTA_T
+def torch_forward_time(np_state, state_length_sampler, beta_household, np_probability_matrix, np_importation_probability, duration=None, secondary_infections=True, simplified_pmat=True): # CLOSES AROUND DELTA_T
     debug = False  
 
     #start = time.time()
@@ -13,7 +13,7 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
     # a matrix of probabilities with ith row jth column corresponding to the probability that ith individual is infected by the jth individual
     population_matrix = torch.from_numpy(np_probability_matrix).to(device) # lacks the beta and delta_t terms
 
-    state = torch.from_numpy(np_state).to(device)     ## move to device
+    state = torch.from_numpy(np_state).to(device) ## move to device
     #print(state.type())
     use_torch_state_lengths = True
     if use_torch_state_lengths:
@@ -30,7 +30,10 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
     #print("device overhead: ", str(time.time() - start))
 
     ## --- Everything from here on out should be in the device and should be fast ---
-    p_mat = (1-(1-beta_household)** constants.delta_t) * population_matrix
+    if simplified_pmat:
+        p_mat = beta_household * constants.delta_t * population_matrix
+    else:
+        p_mat = (1-(1-beta_household)** constants.delta_t) * population_matrix
 
     state_lengths[state == STATE.susceptible] = np.inf ## inf b/c doesn't change w/o infection
     state_lengths[state == STATE.removed]     = np.inf ## inf b/c doesn't change from removed
@@ -82,6 +85,7 @@ def torch_forward_time(np_state, state_length_sampler, beta_household, np_probab
         if inf_mask.any() and sus_mask.any(): # if someone is infectious and someone is susceptible, see if infections happen
             ## permute here works as np.transpose
             #print(p_mat)
+            # probabilities of being infected (ie not escape probabilities)
             probabilities = p_mat * sus_mask * inf_mask.permute(0, 2, 1) # transposing to take what amounts to an outer product in each household
             #print(probabilities)
 
